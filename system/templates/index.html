@@ -1,0 +1,882 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>Home Surveillance</title>
+
+    <!-- Bootstrap Core CSS -->
+    <link href="static/bower_components/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- MetisMenu CSS -->
+    <link href="static/bower_components/metisMenu/dist/metisMenu.min.css" rel="stylesheet">
+
+    <!-- Timeline CSS -->
+    <link href="static/dist/css/timeline.css" rel="stylesheet">
+
+    <!-- Custom CSS -->
+    <link href="static/dist/css/sb-admin-2.css" rel="stylesheet">
+
+    <!-- Morris Charts CSS -->
+    <link href="static/bower_components/morrisjs/morris.css" rel="stylesheet">
+
+    <!-- Custom Fonts -->
+    <link href="static/bower_components/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+      <!--  My Custom -->
+    <link href="static/css/main.css" rel="stylesheet">
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+</head>
+
+<body>
+
+    <div id="wrapper">
+
+        <!-- Navigation -->
+        <nav class="navbar navbar-default navbar-static-top" role="navigation" style="margin-bottom: 0">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" >Home Surveillance</a>
+            </div>
+            <!-- /.navbar-header -->
+
+            <ul class="nav navbar-top-links navbar-right">
+                <!-- /.dropdown -->
+                <li class="dropdown">
+                    <a class="dropdown-toggle" data-toggle="dropdown" href="#">
+                        <i class="fa fa-user fa-fw"></i>  <i class="fa fa-caret-down"></i>
+                    </a>
+                    <ul class="dropdown-menu dropdown-user">
+                        <li><a href="#"><i class="fa fa-user fa-fw"></i> User Profile</a>
+                        </li>
+                        <li class="divider"></li>
+                        <li><a href="{{ url_for('login') }}"><i class="fa fa-sign-out fa-fw"></i> Logout</a>
+                        </li>
+                    </ul>
+                    <!-- /.dropdown-user -->
+                </li>
+                <!-- /.dropdown -->
+            </ul>
+            <!-- /.navbar-top-links -->
+
+            <div class="navbar-default sidebar" role="navigation">
+                <div class="sidebar-nav navbar-collapse">
+                    <ul class="nav" id="side-menu">
+                        <li>
+                            <a href="index.html"><i class="fa fa-dashboard fa-fw"></i> Home</a>
+                        </li>
+                        <li>
+                            <a href="tables.html"><i class="fa fa-table fa-fw"></i> Database</a>
+                        </li>
+                        <li>
+                            <a href="#"><i class="fa fa-wrench fa-fw"></i> Settings<span </span></a>
+                        </li>
+                         <li class="divider"></li>
+                         <li>
+                            <a href="login"><i class="fa fa-sign-out fa-fw"></i> Logout</a>
+                        </li>
+                    </ul>
+                </div>
+                <!-- /.sidebar-collapse -->
+            </div>
+            <!-- /.navbar-static-side -->
+        </nav>
+
+        <div id="page-wrapper">
+            <div class="row">
+                <div class="col-lg-12">
+                    <h1 class="page-header text-center">Home Surveillance Dashboard</h1>
+                </div>
+                <!-- /.col-lg-12 -->
+            </div>
+                <!-- /.row -->
+            <div class="row ">
+                <div class="col-lg-6">
+                      <img class="img-thumbnail panel panel-default" id="bgtwo" src="{{ url_for('video_feed_one') }}" height="260">
+                </div>
+                <div class="col-lg-6">
+                      <img class="img-thumbnail panel panel-default" id="bgtwo" src="{{ url_for('video_feed_one') }}" height="260">
+                </div>
+            </div>
+            <div class="col-lg-12">
+                    <h1 class="page-header"></h1>
+            </div>
+            <!-- /.row -->
+            <div class="row">
+                <div class="col-lg-4">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            <i class="fa fa-fw"></i> Faces Detected
+                            <div class="btn-group pull-right" id = "facedetectbtn">
+                                <button type="button" id="retrain" onclick="retrainClassifier()" class="btn btn-default btn-xs" >
+                                    <i class="fa fa-refresh fa-fw"></i> Retrain Database
+                                </button>
+                            </div>
+                        </div>
+                        <!-- /.panel-heading -->
+                        <div class="panel-body" id="detected-faces">
+
+                           
+                        </div>
+                        <!-- /.panel-body -->
+                    </div>
+                   
+                </div>
+                 <div class="col-lg-8">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            <i class="fa fa-fw"></i> Surveillance Control Panel
+                        </div>
+                        <!-- /.panel-heading -->
+                        <div class="panel-body">
+                             <div class="col-lg-6">
+                                <div class="panel panel-default">
+                                    <div class="panel-heading">
+                                       Alarm Status: <strong id="alarmStatus"></strong>
+                                    </div>
+                                    <div class="panel-body">
+                                           <span >
+                                            <button type="button " id="changestate" onclick = "changeAlarmState()" class="btn btn-warning">Arm/Disarm</button> 
+                                            <button type="button " id="panic" onclick = "panic()"  class="btn btn-danger">Panic</button>
+                                           </span >
+                                    </div>
+                                </div>
+                                <div class="panel panel-default">
+                                    <div class="panel-heading">
+                                        Create New Alert
+                                    </div>
+                                    <div class="panel-body form">
+                                      <div class="row ">
+                                            <div class="col-md-6 ">
+                                                <div class="form-group">
+                                                    <label>Cameras</label>
+                                                    <select id="cameras" class="form-control">
+                                                        <option value="0">Camera 0</option>
+                                                        <option value="1">Camera 1</option>
+                                                        <option value="2">Camera 2</option>
+                                                        <option value="3">Camera 3</option>
+                                                        <option value="all">All</option>
+                                                    </select>
+                                                </div>
+                                                 <div class="form-group">
+                                                    <label>Alarm State</label>
+                                                    <select id="alarmstate" class="form-control">
+                                                        <option>Armed</option>
+                                                        <option>Disarmed</option>
+                                                        <option>All</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6 ">
+                                                
+                                                 <div class="form-group">
+                                                        <label>Event</label>
+                                                        <select id="event" class="form-control">
+                                                            <option>Motion</option>
+                                                            <option>Recognition</option>
+                                                        </select>
+                                                </div>      
+                                                <div class="form-group">
+                                                        <label>Select Person</label>
+                                                        <select id="people"  id="disabledSelect" class="form-control">
+                                                            <option>Intruder</option>
+                                                            <option>brandon-joffe</option>
+                                                            <option>Benji Lewis</option>
+                                                            <option>robby-katz</option>
+                                                        </select>
+                                                </div>                                
+                                            </div>
+                                              <div class="col-lg-12">
+                                                <div class="panel panel-default">
+                                                    <div class="panel-heading">
+                                                        <strong>Actions</strong>
+                                                    </div>
+                                                    <div class="panel-body">
+                                                         <div class="row ">
+                                                            <div class="col-md-6">
+                                                                <div class="form-group">
+                                                                    <div class="checkbox ">
+                                                                       <label>
+                                                                            <input id="email" type="checkbox" value="">EmailNotification
+                                                                        </label>
+                                                                         <label>
+                                                                            <input id="push" type="checkbox" value="">PushNotification
+                                                                        </label>
+                                                                    </div>
+                                                                  </div>
+                                                            </div>
+                                                            <div class="col-md-6 ">
+                                                                <div class="form-group">
+                                                                    <div class="checkbox text-center">
+                                                                        <label>
+                                                                            <input id="trigger" type="checkbox" value="">TriggerAlarm
+                                                                        </label>
+                                                                        <label>
+                                                                            <input id="notify" type="checkbox" value="">NotifyPolice
+                                                                        </label>
+                                                                    </div>
+                                                                </div>
+                                                         </div>
+                                                    </div>
+                                                   </div>
+                                                </div>
+                                            </div>
+                                            
+                                      </div> 
+                                    <button type="button " onclick="createAlert()" class="btn btn-success">Create</button> 
+                                    </div>
+                                </div>
+                            </div>
+                              <div class="col-lg-6">
+                                <div class="panel panel-default">
+                                    <div class="panel-heading">
+                                        <i class="fa fa-bell fa-fw"></i>Notification Alerts
+                                    </div>
+                                    <!-- /.panel-heading -->
+                                    <div class="panel-body" id="alert-list" >
+                                    
+                            <!-- /.list-group -->
+                            <!-- <a href="#" class="btn btn-default btn-block">Add Alerts Alerts</a> -->
+                                    </div>
+                                    <!-- /.panel-body -->
+                                </div>
+                                <!-- /.col-lg-4 -->
+                            </div>
+                              
+                           
+                        </div>
+                        <!-- /.panel-body -->
+                    </div>
+                   
+                </div>
+                <!-- /.col-lg-8 -->
+                <div class="col-lg-4">
+                    <div class="chat-panel panel panel-default">
+                        <div class="panel-heading">
+                            <i class="fa fa-comments fa-fw"></i>
+                            Chat
+                            <div class="btn-group pull-right">
+                                <button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown">
+                                    <i class="fa fa-chevron-down"></i>
+                                </button>
+                                <ul class="dropdown-menu slidedown">
+                                    <li>
+                                        <a href="#">
+                                            <i class="fa fa-refresh fa-fw"></i> Refresh
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="#">
+                                            <i class="fa fa-check-circle fa-fw"></i> Available
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                         <div class="panel-body">
+                            <ul class="chat">
+                                <li class="left clearfix">
+                                    <span class="chat-img pull-left">
+                                        <img src="http://placehold.it/50/55C1E7/fff" alt="User Avatar" class="img-circle" />
+                                    </span>
+                                    <div class="chat-body clearfix">
+                                        <div class="header">
+                                            <strong class="primary-font">Brandon Joffe</strong>
+                                            <small class="pull-right text-muted">
+                                                <i class="fa fa-clock-o fa-fw"></i> 12 mins ago
+                                            </small>
+                                        </div>
+                                         <!--  <form id="emit" class = "row" method="POST" action='#'>
+                                            <input type="text" class="form-control input-lg" name="emit_data" id="emit_data" placeholder="Message">
+                                            <input type="submit" class="btn btn-warning btn-sm" value="Echo">
+                                            </form>
+                                            <form id="broadcast" class = "row"  method="POST" action='#'>
+                                                <input type="text" class="form-control input-lg" name="broadcast_data" id="broadcast_data" placeholder="Message">
+                                                <input type="submit" class="btn btn-warning btn-sm" value="Broadcast">
+                                            </form>
+                                            <form id="disconnect" class = "row" method="POST" action="#">
+                                                <input type="submit" class="btn btn-warning btn-sm" value="Disconnect">
+                                            </form>
+                                             -->
+                                            
+                                    </div>
+
+                                  </li>
+                              </ul>
+                               <div id="log"></div> 
+                               <h3>Number list:</h3>
+                               <div id="numbers"></div> 
+                               <div id="facedata"></div> 
+                               <div id="progressbar"></div>
+                               <div id="placehere"></div>
+                              
+                        </div>
+                        <div class="panel-footer">
+                            <div>     
+                                        <form id="broadcast" method="POST" class="input-group" action='#'>
+                                                <input type="text" class="form-control input-sm" name="broadcast_data" id="broadcast_data" placeholder="Message">
+                                                 <span class="input-group-btn">
+                                                <input type="submit" class="btn btn-warning btn-sm" value="Broadcast">
+                                                 </span>
+                                        </form>                                
+                            </div>
+                        </div>
+                        <!-- /.panel-footer -->
+                    </div>
+                    <!-- /.panel .chat-panel -->
+                </div>
+                <!-- /.col-lg-4 -->
+            </div>
+            <!-- /.row -->
+        </div>
+        <!-- /#page-wrapper -->
+
+    </div>
+    <!-- /#wrapper -->
+
+    <!-- jQuery -->
+    <script src="static/bower_components/jquery/dist/jquery.min.js"></script>
+
+    <!-- Bootstrap Core JavaScript -->
+    <script src="static/bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+
+    <!-- Metis Menu Plugin JavaScript -->
+    <script src="static/bower_components/metisMenu/dist/metisMenu.min.js"></script>
+
+    <!-- Morris Charts JavaScript -->
+    <script src="static/bower_components/raphael/raphael-min.js"></script>
+    <script src="static/bower_components/morrisjs/morris.min.js"></script>
+    <script src="static/js/morris-data.js"></script>
+
+    <!-- Custom Theme JavaScript -->
+    <script src="static/dist/js/sb-admin-2.js"></script>
+
+
+     <script type="text/javascript" src="//code.jquery.com/jquery-1.4.2.min.js"></script>
+     <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/1.3.5/socket.io.min.js"></script>
+     <script type="text/javascript" charset="utf-8">
+
+            function retrainClassifier(){
+                    
+                      $('#retrain').html('<i class="fa fa-refresh fa-spin fa-3x fa-fw" style="font-size:12px;"></i> Retraining Database');
+
+                      $.ajax({
+                                  type: "POST",
+                                  url: "{{ url_for('retrain_classifier') }}",
+                                  data : {}, 
+                                  success: function(results) {
+                                    console.log(results.finished);
+                                    $('#numbers').html(results.finished+ "training")
+                                    $('#retrain').html('<i class="fa fa-refresh fa-fw"></i> Retrain Database');
+
+                                  },
+                                  error: function(error) {
+                                    console.log(error);
+                                  }
+                           });
+
+
+                }
+            function removeFace(id){
+                    
+                      //var text=$('#' + id + '_input').html();
+                      var values = id.split('_');
+
+                      var name = values[0];
+                     
+                      var person =document.getElementById(name); //remove person from div
+                      person.parentNode.removeChild(person);
+
+                      $('#numbers').html(name+ " :  removed");
+                      $.ajax({
+                                  type: "POST",
+                                  url: "{{ url_for('remove_face') }}",
+                                  data : {'predicted_name': name}, 
+                                  success: function(results) {
+                                    console.log(results);
+                                    $('#numbers').html('face removed: ' + results.face_removed);
+                                        
+                                  },
+                                  error: function(error) {
+                                    console.log(error);
+                                  }
+                           });
+
+
+                }
+
+
+            function addFace(id){
+                    
+                      var values = id.split('_');
+
+                      var name = values[0];
+                      if(values[1]=='trust') {
+                            var newNameID = name;
+                      }
+                      else{
+                            var newNameID = document.getElementById(name + "_input").value;
+
+                      }
+
+                      
+                      var person =document.getElementById(name); //remove person from div
+                      person.parentNode.removeChild(person);
+
+                      $('#numbers').html(name+ " : " + newNameID);
+                      $.ajax({
+                                  type: "POST",
+                                  url: "{{ url_for('add_face') }}",
+                                  data : {'predicted_name': name, 'new_name': newNameID}, 
+                                  success: function(results) {
+                                    console.log(results);
+
+                                    $('#numbers').html('face added ' + results.face_added);
+
+
+                                        
+                                  },
+                                  error: function(error) {
+                                    console.log(error);
+                                  }
+                           });
+
+
+                }
+
+                function createAlert() {
+                            //getting selected option from dropdowns
+                            var e = document.getElementById("cameras");
+                            var cam = e.options[e.selectedIndex].value; 
+                            var e1 = document.getElementById("event");
+                            var eventd = e1.options[e1.selectedIndex].text; 
+                            var e2 = document.getElementById("alarmstate");
+                            var alarm = e2.options[e2.selectedIndex].text; 
+                            var e3 = document.getElementById("people");
+                            var pers = e3.options[e3.selectedIndex].text;  
+
+                            var email = false;
+                            var push = false;
+                            var triggerA = false;
+                            var notifyP = false;
+
+                       
+                            if(document.getElementById("email").checked==true) {
+                                email = true;
+                                alertstyle = "alert-success"
+                            }
+                            if(document.getElementById("push").checked==true) {
+                                push = true;
+                                alertstyle = "alert-info"
+                            }
+                            if(document.getElementById("trigger").checked==true) {
+                                triggerA = true;
+                                alertstyle = "alert-danger"
+                            }
+                            if(document.getElementById("notify").checked==true) {
+                                notifyP = true;
+                                alertstyle = "alert-danger"
+                            }
+
+
+                            //ajax post used to send alert data via json [ 'push_alert': push,'email_alert':email, 'trigger_alarm':triggerA, 'notify_police':notifyP]
+                             $.ajax({
+                                  type: "POST",
+                                  url: "{{ url_for('create_alert') }}",
+                                  data : {'camera': cam, 'eventdetail': eventd, 'alarmstate': alarm, 'person': pers, 'push_alert': push,'email_alert':email, 'trigger_alarm':triggerA,'notify_police':notifyP}, 
+                                  success: function(results) {
+                                    console.log(results);
+                                    $('#numbers').html(results.alert_id);
+
+
+                                        var alertdiv = document.createElement("div");
+                                        alertdiv.setAttribute("class","alert alert-dismissable " + alertstyle);   
+                                        var btn = document.createElement("BUTTON");        
+                                        btn.setAttribute("type","button");    
+                                        btn.setAttribute("class", "close"); 
+                                        btn.setAttribute("data-dismiss", "alert");  
+                                        btn.setAttribute("aria-hidden","true"); 
+                                        btn.setAttribute("onclick","removeAlert(this.id)"); 
+                                        btn.setAttribute("id",results.alert_id);  
+                                        btn.innerHTML = "&times;";
+                                        alertdiv.innerHTML = results.alert_message;
+                                        alertdiv.appendChild(btn);
+                                        document.getElementById("alert-list").appendChild(alertdiv);
+
+                                  },
+                                  error: function(error) {
+                                    console.log(error);
+                                  }
+                            });
+
+                            document.getElementById("numbers").innerHTML = "push: " + push+ " email: " + email+ " trigger: " + triggerA + "   " + push + "   "+email+ "   "+triggerA;
+                }
+
+                function removeAlert(id) {
+                     $('#numbers').html("removed alert " + id);
+
+                      $.ajax({
+                              type: "POST",
+                              url: "{{ url_for('remove_alert') }}",
+                              data : {'alert_id': id}, 
+                              success: function(results) {
+                                console.log(results);
+                                $('#numbers').html(results.alert_status);
+                              },
+                              error: function(error) {
+                                console.log(error);
+                              }
+                        });
+
+                 }
+
+                function changeAlarmState() {
+
+                            document.getElementById("numbers").innerHTML = "AlarmStateChanged";
+                }
+                function panic() {
+                            document.getElementById("numbers").innerHTML = "Panic";
+                }
+
+                $(document).ready(function(){
+
+                    var socket = io.connect('http://' + document.domain + ':' + location.port + '/test');
+
+                    var numbers_received = [];
+                    var people_received = [];
+
+                     $("#changestate").click(function(){
+                        socket.emit('alarm_state_change');
+                        return false;
+                     }); 
+
+                    $("#panic").click(function(){
+                        socket.emit('panic');
+                        return false;
+                     }); 
+
+                    socket.on('my response', function(msg) {           //socket.on used to define event handeler
+                        $('#log').append('<p>' + msg.data + '</p>');
+                    });
+
+
+
+                    $('form#emit').submit(function(event) {
+                        
+                    });
+
+                    $('form#broadcast').submit(function(event) {
+                        socket.emit('my broadcast event', {data: $('#broadcast_data').val()});
+                        return false;
+                    });
+
+                     //receive details from server
+                    socket.on('newnumber', function(msg) {
+                        console.log("Received number" + msg.number);
+                        //maintain a list of ten numbers
+                        if (numbers_received.length >= 10){
+                            numbers_received.shift()
+                        }
+                        numbers_received.push(msg.number);
+                        numbers_string = '';
+                        for (var i = 0; i < numbers_received.length; i++){
+                            numbers_string = numbers_string + '<p>' + numbers_received[i].toString() + '</p>';
+                        }
+                        $('#numbers').html(numbers_string);
+                    });
+
+                     socket.on('people_detected', function(json) {   
+                   
+                        console.log("Received peopledata in Loop" + json);
+                        var people = JSON.parse(json);
+                        people_string = '';
+                       
+                        for (var i = 0; i < people.length; i++){
+
+                            if(!document.getElementById(people[i].identity)){
+
+                                    var img_string = "/get_faceimg/"+ people[i].identity + "#";
+
+            /////////////////////////////////////////////////////////////////// Main divs
+                                    var maindiv = document.createElement("div");
+                                    maindiv.setAttribute("class", "col-md-6 ");
+                                    maindiv.setAttribute("id", people[i].identity);
+                                    var thumbdiv = document.createElement("div");
+                                    thumbdiv.setAttribute("class", "thumbnail");
+            /////////////////////////////////////////////////////////////////// img element
+                                    var imgj = document.createElement("img");
+                                    imgj.setAttribute("src", img_string + new Date().getTime());
+                                    imgj.setAttribute("height", "100");
+                                    imgj.setAttribute("width", "100");
+                                    imgj.setAttribute("id", people[i].identity+ "_image");
+                                    imgj.setAttribute("alt", "Random Name");
+                                    imgj.setAttribute("class", "person"); //img-circle 
+                                    //document.getElementById("progressbar").appendChild(imgj);
+                                    thumbdiv.appendChild(imgj);
+            /////////////////////////////////////////////////////////////////// name element
+                                    var name = document.createElement("p");
+                                    name.setAttribute("class", "text-center");
+                                    name.innerHTML = "<strong>"+people[i].identity+"</strong>";
+                                    thumbdiv.appendChild(name);
+            /////////////////////////////////////////////////////////////////// button element
+                                    var aligndiv = document.createElement("div");
+                                    aligndiv.setAttribute("class","pull-right");   
+
+                                    var btndiv = document.createElement("div");
+                                    btndiv.setAttribute("class","btn-group");   
+                                    var btn = document.createElement("BUTTON");        
+                                    btn.setAttribute("type","button");    
+                                    btn.setAttribute("class", "btn btn-default btn-xs dropdown-toggle");  
+                                    btn.setAttribute("data-toggle","dropdown");  
+
+                                    var spn = document.createElement("span");
+                                    spn.setAttribute("class","caret");    
+                                    btn.appendChild(spn);
+                                   
+                                    var list = document.createElement("ul");
+                                    list.setAttribute("class","dropdown-menu text-centre"); 
+                                    list.setAttribute("role","menu"); 
+                                    list.setAttribute("id","faceActionList"); 
+
+
+                                    var listitem = document.createElement("li");
+                                    var inner = document.createElement("a");
+                                    inner.setAttribute("id",people[i].identity+"_remove"); 
+                                    inner.setAttribute("onclick","removeFace(this.id)"); 
+                                    inner.innerHTML = "Remove";
+                                    //addFace(id)
+                                    listitem.appendChild(inner);
+                                    list.appendChild(listitem);
+
+                                    var listitem = document.createElement("li");
+                                    var inner = document.createElement("a");
+                                    inner.setAttribute("id",people[i].identity+"_trust"); 
+                                    inner.setAttribute("onclick","addFace(this.id)"); 
+                                    inner.innerHTML = "Trust";
+                                    
+                                    listitem.appendChild(inner);
+                                    list.appendChild(listitem);
+
+                                    var listitem = document.createElement("li");
+                                    var inner = document.createElement("a");
+                                    inner.setAttribute("data-toggle","modal"); 
+                                    inner.setAttribute("id","addfacebtnID"); 
+                                    inner.setAttribute("data-target","#"+people[i].identity+"_modal"); 
+                                    inner.innerHTML = "Add New Face";
+                                  
+                                    listitem.appendChild(inner);
+                                    list.appendChild(listitem);   
+
+                                    btndiv.appendChild(btn);
+                                    btndiv.appendChild(list);
+                                    aligndiv.appendChild(btndiv);
+
+                                    //document.getElementById("progressbar").appendChild(btndiv);   
+                                    thumbdiv.appendChild(aligndiv);
+             ///////////////////////////////////////////////////////////////////  progress bar element                     
+                                    var d1 = document.createElement("div");
+                                    d1.setAttribute("class","progress");
+                                    var d2 = document.createElement("div");
+                                    d2.setAttribute("class","progress-bar progress-bar-success");
+                                    d2.setAttribute("role","progress-bar progress-bar-success");
+                                    d2.setAttribute("aria-valuenow","50");
+                                    d2.setAttribute("aria-valuemin","0");
+                                    d2.setAttribute("aria-valuemax","100");
+                                    d2.setAttribute("style","width:" + people[i].confidence +"%");
+                                    d2.innerHTML = people[i].confidence + "%";
+                                    d1.appendChild(d2);
+             /////////////////////////////////////////////////////////////////////////////////////
+                                 
+                                    var modal = document.createElement("div");
+                                    modal.setAttribute("class","modal fade col-md-3 text-center");
+                                    modal.setAttribute("id",people[i].identity+"_modal");
+                                    modal.setAttribute("tabindex","-1");
+                                    modal.setAttribute("role","dialog");
+                                    modal.setAttribute("aria-labelledby","myModalLabel");
+                                    modal.setAttribute("aria-hidden","true");
+                                
+
+
+                                    var dialog = document.createElement("div");
+                                    dialog.setAttribute("class","modal-dialog");
+                                    //modal.appendChild(dialog);
+
+                                    var content = document.createElement("div");
+                                    dialog.setAttribute("class","modal-content");
+                                    //dialog.appendChild(content);
+
+                                    var header = document.createElement("div");
+                                    header.setAttribute("class","modal-header");
+                                    //dialog.appendChild(content);
+
+                                    var btn2 = document.createElement("BUTTON");        
+                                    btn2.setAttribute("type","button");    
+                                    btn2.setAttribute("class", "close");  
+                                    btn2.setAttribute("data-dismiss","modal");  
+                                    btn2.setAttribute("aria-hidden","true");  
+                                    btn2.innerHTML = "&times;";
+
+                                    header.appendChild(btn2);
+
+                                    var title = document.createElement("h4");        
+                                    title.setAttribute("id","myModalLabel");    
+                                    title.setAttribute("class", "modal-title");  
+                                    title.innerHTML = "Add face to Database";
+                                  
+                                    header.appendChild(title);                
+                                    content.appendChild(header);
+
+                                    var body = document.createElement("div");
+                                    body.setAttribute("class","modal-body");
+
+                                    var imgj1 = document.createElement("img");
+                                    imgj1.setAttribute("src", img_string + new Date().getTime());
+                                    imgj1.setAttribute("height", "100");
+                                    imgj1.setAttribute("width", "100");
+                                    imgj1.setAttribute("id", people[i].identity+ "_imageModal");
+                                    imgj1.setAttribute("class", "person"); //img-circle 
+                                    
+                                    body.appendChild(imgj1);
+
+                                    var name = document.createElement("h4");
+                                    name.setAttribute("class", "text-center");
+                                    name.setAttribute("id", people[i].identity+ "nameID");
+                                    name.innerHTML = "<strong>" + people[i].identity+ " ?</strong>";
+
+                                    body.appendChild(name);
+
+                                    var form = document.createElement("div");
+                                    form.setAttribute("class","form-group has-success");
+
+                                    var input = document.createElement("input");
+                                    input.setAttribute("class","form-control"); 
+                                    input.setAttribute("placeholder","Enter Name"); 
+                                    input.setAttribute("type","text");  
+                                    input.setAttribute("id", people[i].identity+ "_input");   
+
+                                    form.appendChild(input);                
+                                    body.appendChild(form);
+                                 
+                                    content.appendChild(body);
+
+                                    var footer = document.createElement("div");
+                                    footer.setAttribute("class","modal-footer");
+                                    //dialog.appendChild(content);
+
+                                    var btn3 = document.createElement("BUTTON");        
+                                    btn3.setAttribute("type","button");    
+                                    btn3.setAttribute("class", "btn btn-success pull-right");  
+                                    btn3.setAttribute("data-dismiss","modal");  
+                                    btn3.setAttribute("aria-hidden","true"); 
+                                    btn3.setAttribute("id",people[i].identity+"_add");  
+                                    btn3.setAttribute("onclick","addFace(this.id)");  
+                                    btn3.innerHTML = "Add Face";
+
+                                    footer.appendChild(btn3);
+
+                                    content.appendChild(footer);
+                                    dialog.appendChild(content);
+                                    modal.appendChild(dialog);
+
+
+                                    thumbdiv.appendChild(d1);
+                                   
+                                    maindiv.appendChild(thumbdiv);
+                            
+
+                                    document.getElementById("detected-faces").appendChild(maindiv);
+                                    document.getElementById("detected-faces").appendChild(modal);
+                            }
+                            else{
+
+                                var x = document.getElementById(people[i].identity).getElementsByClassName("progress-bar progress-bar-success");
+                                    
+                                for (var j = 0; j < x.length; j++) {
+                                        console.log("Updating detected face");                        
+                                        x[j].setAttribute("style","width:" + people[i].confidence +"%");
+                                        x[j].innerHTML = people[i].confidence +"%";
+                                    }
+                                console.log("Updating image: " + people[i].identity);  
+                                var img_string = "/get_faceimg/"+ people[i].identity + "#";
+                                $('#' + people[i].identity+ '_image').attr('src',  img_string  + new Date().getTime()); //jquery used to update image
+                                $('#' + people[i].identity + "_imageModal").attr('src',  img_string  + new Date().getTime()); //update modal image 
+                            }
+
+                            //console.log(people_string);
+              
+                        }   
+
+                        
+                    });
+                    
+                      socket.on('alarm_status', function(json) {   
+
+                               console.log("Alarm Status: " + json);
+                               var alarm_status = JSON.parse(json);
+
+                               if(alarm_status.triggered == true){
+
+                                    $("#alarmStatus").html("Alarm Triggered");
+                               }
+                               else{
+                                    $("#alarmStatus").html(alarm_status.state);
+
+                               }         
+
+                        });
+
+                      socket.on('system_data', function(json) {   
+
+                               console.log("System Data: " + json);
+                               var system_data = JSON.parse(json);
+                               var person;
+                               var i = 0;
+                               people_string = '';
+                               for (; i < system_data.people.length;i++) {
+                                    people_string = people_string + '<option>' + system_data.people[i]+ '</option>';
+                               }
+                                $('#people').html(people_string);
+
+                               var i = 0;
+                               camera_string = '';
+                               for (; i < system_data.camNum;i++) {
+                                    camera_string = camera_string + '<option value="' + i.toString() + '"> Camera ' + i + '</option>';
+                               }
+                               camera_string = camera_string + '<option value="all">All</option>';
+                                $('#cameras').html(camera_string);
+
+                        });
+
+
+                });
+
+                // function removeFileInput(i) {
+                //   var div = "att"+i;
+                //   var d = document.getElementById("detected-faces");
+                //   var olddiv = document.getElementById(div);
+                //   d.removeChild(olddiv);
+                // };
+               
+     </script>
+
+</body>
+
+</html>
