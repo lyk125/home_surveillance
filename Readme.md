@@ -46,9 +46,9 @@ python WebSocket.py
 # References
 ---
 
-Video Streaming Code - http://www.chioka.in/python-live-video-streaming-example/
-Flask Web Server GPIO - http://mattrichardson.com/Raspberry-Pi-Flask/
-Openface Project - https://cmusatyalab.github.io/openface/
-Flask Web Sockets - http://blog.miguelgrinberg.com/post/easy-websockets-with-flask-and-gevent
+- Video Streaming Code - http://www.chioka.in/python-live-video-streaming-example/
+- Flask Web Server GPIO - http://mattrichardson.com/Raspberry-Pi-Flask/
+- Openface Project - https://cmusatyalab.github.io/openface/
+- Flask Web Sockets - http://blog.miguelgrinberg.com/post/easy-websockets-with-flask-and-gevent
 
  
