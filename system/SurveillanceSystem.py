@@ -365,6 +365,7 @@ class Surveillance_System(object):
                 print "\nnotifying police\n"
                 #notify police
             alert.action_taken = True
+  
 
    def trainClassifier(self):
 

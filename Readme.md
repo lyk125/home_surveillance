@@ -39,12 +39,16 @@ python WebSocket.py
 - To add your own IP camera simply add the URL of the camera to the SurveillanceSystem.py script within the Surveillance_System constructer method. ``` self.cameras.append(Camera.VideoCamera("http://192.168.1.48/video.mjpg")) ``` 
 - Faces that are detected are shown in the faces detected panel on the Home Surveillance Dashboard
 - The Dashboard allows you to configure your own email and push notification alerts (You'll need to download the instapush app and add your email address in the SurveillanceSystem.py script).
+- The alarm control panel sends http post requests to a web server on a Raspberry PI to control GPIO pins. 
 - This project is being developed for the purpose of my thesis and I hope to have a fully functional system by the end of October 2016.
 - Currently there are a few bugs and the code is not well commented.
 
 # References
 ---
 
-Video Streaming Code - http://www.chioka.in/python-live-video-streaming-example/
+- Video Streaming Code - http://www.chioka.in/python-live-video-streaming-example/
+- Flask Web Server GPIO - http://mattrichardson.com/Raspberry-Pi-Flask/
+- Openface Project - https://cmusatyalab.github.io/openface/
+- Flask Websockets - http://blog.miguelgrinberg.com/post/easy-websockets-with-flask-and-gevent
 
  
