@@ -45,6 +45,7 @@ import sys
 import logging
 import threading
 import time
+from datetime import datetime, timedelta
 
 import smtplib
 from email.MIMEMultipart import MIMEMultipart
@@ -139,9 +140,13 @@ class Surveillance_System(object):
         #self.cameras.append(Camera.VideoCamera("http://192.168.1.37/video.mjpg"))
         #self.cameras.append(Camera.VideoCamera("http://192.168.1.37/video.mjpg"))
         #self.cameras.append(Camera.VideoCamera("debugging/iphone_distance1080pHD.m4v"))
+        #self.cameras.append(Camera.VideoCamera("debugging/Test.mov"))
+        self.cameras.append(Camera.VideoCamera("debugging/Test.mov"))
         self.cameras.append(Camera.VideoCamera("debugging/Test.mov"))
         #self.cameras.append(Camera.VideoCamera("debugging/Test.mov"))
         #self.cameras.append(Camera.VideoCamera("debugging/rotationD.m4v"))
+        self.cameras.append(Camera.VideoCamera("debugging/singleTest.m4v"))
+        self.cameras.append(Camera.VideoCamera("debugging/singleTest.m4v"))
         #self.cameras.append(Camera.VideoCamera("debugging/example_01.mp4"))
 
 
@@ -194,9 +199,8 @@ class Surveillance_System(object):
                  if camera.motion == True:
                     logging.debug('\n\n////////////////////// Motion Detected - Looking for faces in Face Detection Mode\n\n')
                     state = 2
-                 #camera.processing_frame = frame
+                    camera.processing_frame = frame
                  continue
-
 
              elif state == 2: # if motion has been detected
 
@@ -205,6 +209,8 @@ class Surveillance_System(object):
                   frame_count += 1
                        
                 camera.faceBoxes = ImageProcessor.detectopencv_face(frame)
+                #camera.faceBoxes = ImageProcessor.detect_cascade(frame, ImageProcessor.uppercascade)
+                #camera.faceBoxes = ImageProcessor.detectdlib_face(frame,height,width)
                 if len(camera.faceBoxes) == 0:
                   if (time.time() - start) > 20.0:
                     logging.debug('\n\n//////////////////////  No faces found for ' + str(time.time() - start) + ' seconds - Going back to Motion Detection Mode\n\n')
@@ -213,27 +219,28 @@ class Surveillance_System(object):
                     #camera.processing_frame = frame
                 else:
                     training_blocker = self.trainingEvent.wait()  
-
-                    #camera.processing_frame = ImageProcessor.draw_rects_cv(frame, camera.faceBoxes)
-
-                    logging.debug('\n\n//////////////////////  '+ str(len(camera.faceBoxes)) +' FACES DETECTED  //////////////////////\n\n')
+  
+                    logging.debug('\n\n////////////////////// '+ str(len(camera.faceBoxes)) +' FACES DETECTED  //////////////////////\n\n')
                     camera.rgbFrame = ImageProcessor.convertImageToNumpyArray(frame,height,width) # conversion required by dlib methods
-
                     for x, y, w, h in camera.faceBoxes:
-                        bb = dlib.rectangle(long(x), long(y), long(x+w), long(y+h))
+                    #for bb in camera.faceBoxes:
+                        bb = dlib.rectangle(long(x), long(y), long(x+w), long(y+h)) 
+                        faceimg = ImageProcessor.crop(frame, bb, dlibRect = True)
+                        height, width, channels = faceimg.shape
+                        if len(ImageProcessor.detectdlib_face(faceimg,height,width)) == 0 :
+                            continue
                         alignedFace = ImageProcessor.align_face(camera.rgbFrame,bb)
-                        if alignedFace == None:
-                          continue
-                      
-                        predictions = ImageProcessor.face_recognition(camera,alignedFace)
+                        predictions = ImageProcessor.face_recognition(alignedFace)
                         with camera.people_dict_lock:
                           if camera.people.has_key(predictions['name']):
                               if camera.people[predictions['name']].confidence < predictions['confidence']:
                                   camera.people[predictions['name']].confidence = predictions['confidence']
                                   camera.people[predictions['name']].set_thumbnail(alignedFace)  
+                                  camera.people[predictions['name']].set_time()
                           else: 
                               camera.people[predictions['name']] = Person(predictions['confidence'], alignedFace)
                     start = time.time() #used to go back to motion detection state of 20s of not finding a face
+                    camera.processing_frame = frame
 
                     #camera.processing_frame = ImageProcessor.draw_rects_dlib(frame, camera.faceBoxes)
                       
@@ -331,7 +338,6 @@ class Surveillance_System(object):
                  
             else:
                 for camera in self.cameras: # look through all cameras
-
                     if camera.motion == True: # has motion been detected
                         cv2.imwrite("notification/image.png", camera.processing_frame)#
                         self.take_action(alert)
@@ -339,7 +345,6 @@ class Surveillance_System(object):
 
                     else:
                         return False # motion was not detected check next camera
-
 
    def take_action(self,alert): 
         print "Taking action: ======================================================="
@@ -448,14 +453,16 @@ class Surveillance_System(object):
       # code produced in this tutorial - http://naelshiab.com/tutorial-send-email-python/
       fromaddr = "home.face.surveillance@gmail.com"
       toaddr = "bjjoffe@gmail.com"
-       
+      
+
+
       msg = MIMEMultipart()
        
       msg['From'] = fromaddr
       msg['To'] = toaddr
       msg['Subject'] = "HOME SURVEILLANCE NOTIFICATION"
        
-      body = "NOTIFICATION ALERT\n================\n" +  alertMessage + "\n"
+      body = "NOTIFICATION ALERT\n_______________________\n" +  alertMessage + "\n"
        
       msg.attach(MIMEText(body, 'plain'))
        
@@ -492,7 +499,7 @@ class Surveillance_System(object):
       #app.add_event(event_name='FaceDetected', trackers=['message'],
       #              message='{message} face detected.')
 
-      app.notify(event_name='FaceDetected', trackers={'message': "NOTIFICATION ALERT\n================\n" +  alarmMesssage})
+      app.notify(event_name='FaceDetected', trackers={'message': "NOTIFICATION ALERT\n_______________________\n" +  alarmMesssage})
 
    def add_face(self,name,image):
 
@@ -572,18 +579,28 @@ class Person(object):
 
     def __init__(self,confidence, face):       
         #self.personCoord = personCoord
-
+        #oldtimetuple = time.localtime(EpochSeconds)
+        # oldtimetuple contains (year, month, day, hour, minute, second, weekday, yearday, daylightSavingAdjustment) 
+       
         self.identity = "unknown_" + str(Person.person_count)
         self.confidence = confidence
+
+        now = datetime.now() + timedelta(hours=2)
+        self.time = now.strftime("%A %d %B %Y %I:%M:%S%p")
+
         self.face = face
         ret, jpeg = cv2.imencode('.jpg', face) #convert to jpg to be viewed by client
         self.thumbnail = jpeg.tostring()
 
         Person.person_count += 1 
         #self.tracker = dlib.correlation_tracker()
-    
+        print self.time 
     def get_identity(self):
         return self.identity
+
+    def set_time(self):
+        now = datetime.now() + timedelta(hours=2)
+        self.time = now.strftime("%A %d %B %Y %I:%M:%S%p")
 
     def set_thumbnail(self, face):
         self.face = face

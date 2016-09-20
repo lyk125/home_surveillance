@@ -46,8 +46,6 @@ thread1.daemon = False
 thread2.daemon = False
 
 
-
-
 @app.route('/', methods=['GET','POST'])
 def login():
     error = None
@@ -63,10 +61,9 @@ def login():
 def home():
     return render_template('index.html')
 
- 
 def gen(camera):
     while True:
-        frame = camera.read_jpg()  #read_processed()
+        frame = camera.read_jpg()# read_jpg()  #read_processed()
         yield (b'--frame\r\n'
                b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n\r\n')  # builds 'jpeg' data with header and payload 
 
@@ -76,14 +73,20 @@ def video_feed_one():
     return Response(gen(Home_Surveillance.cameras[0]),
                     mimetype='multipart/x-mixed-replace; boundary=frame') # a stream where each part replaces the previous part the multipart/x-mixed-replace content type must be used.
 
-# @app.route('/video_feed_two')
-# def video_feed_two():
-#     return Response(gen(Home_Surveillance.cameras[0]),
-#                     mimetype='multipart/x-mixed-replace; boundary=frame')
-# @app.route('/video_feed_three')
-# def video_feed_three():
-#     return Response(gen(Home_Surveillance.cameras[2]),
-#                     mimetype='multipart/x-mixed-replace; boundary=frame')
+
+@app.route('/video_feed_two')
+def video_feed_two():
+
+    return Response(gen(Home_Surveillance.cameras[1]),
+                    mimetype='multipart/x-mixed-replace; boundary=frame') # a stream where each part replaces the previous part the multipart/x-mixed-replace content type must be used.
+@app.route('/video_feed_three')
+def video_feed_three():
+    return Response(gen(Home_Surveillance.cameras[2]),
+                    mimetype='multipart/x-mixed-replace; boundary=frame')
+@app.route('/video_feed_four')
+def video_feed_four():
+    return Response(gen(Home_Surveillance.cameras[3]),
+                    mimetype='multipart/x-mixed-replace; boundary=frame')
 
 # @app.route('/video_feed_two')
 # def video_feed_four():
@@ -131,13 +134,14 @@ def remove_alert():
 def remove_face():
     if request.method == 'POST':
         predicted_name = request.form.get('predicted_name')
-
-        for camera in Home_Surveillance.cameras:
-            with camera.people_dict_lock:
-                try:    
-                    del camera.people[predicted_name]    #removes face from people detected in all cameras - need to change this!!
-                except:
-                    pass
+        camNum = request.form.get('camera')
+        
+        with Home_Surveillance.cameras[int(camNum)].people_dict_lock:
+            try:    
+                del Home_Surveillance.cameras[int(camNum)].people[predicted_name]    #removes face from people detected in all cameras - need to change this!!
+            except:
+                print "\n\n\nERROR could not remove Face\n\n\n"
+                pass
 
         data = {"face_removed":  'true'}
         return jsonify(data)
@@ -148,14 +152,17 @@ def add_face():
     if request.method == 'POST':
         new_name = request.form.get('new_name')
         predicted_name = request.form.get('predicted_name')
+        camNum = request.form.get('camera')
         img = None
-        for camera in Home_Surveillance.cameras:
-            with camera.people_dict_lock:  
-                try:  
-                    img = camera.people[predicted_name].face   #gets face of person detected in cameras 
-                    del camera.people[predicted_name]    #removes face from people detected in all cameras - need to change this!!
-                except:
-                    continue
+        #Home_Surveillance.cameras[int(camNum)].people[name].thumbnail 
+      
+        with Home_Surveillance.cameras[int(camNum)].people_dict_lock:  
+            try:  
+                img = Home_Surveillance.cameras[int(camNum)].people[predicted_name].face   #gets face of person detected in cameras 
+                del Home_Surveillance.cameras[int(camNum)].people[predicted_name]    #removes face from people detected in all cameras - need to change this!!
+            except:
+                print "\n\n\nERROR could not add Face\n\n\n"
+                
         wriitenToDir = Home_Surveillance.add_face(new_name,img)
 
         systemData = {'camNum': len(Home_Surveillance.cameras) , 'people': Home_Surveillance.peopleDB}
@@ -178,13 +185,15 @@ def retrain_classifier():
 
 
 @app.route('/get_faceimg/<name>')
-def get_faceimg(name):
-    for camera in Home_Surveillance.cameras:    
-            try:
-                with camera.people_dict_lock:
-                    img = camera.people[name].thumbnail #need to change to get face from specific camera
-            except:
-                img = ""
+def get_faceimg(name):  
+    name,camNum = name.split("_")
+    try:
+        with Home_Surveillance.cameras[int(camNum)].people_dict_lock:
+            img = Home_Surveillance.cameras[int(camNum)].people[name].thumbnail 
+    except Exception as e:
+        print "\n\n\n\nError\n\n\n"
+        print e 
+        img = ""
 
     if img == "":
         return "http://www.character-education.org.uk/images/exec/speaker-placeholder.png"            
@@ -198,11 +207,10 @@ def update_faces():
             peopledata = []
             persondict = {}
             thumbnail = None
-            for camera in Home_Surveillance.cameras:
+            for i, camera in enumerate(Home_Surveillance.cameras):
                 for key, obj in camera.people.iteritems():  
-                   
-                    persondict = {'identity': key , 'confidence': obj.confidence}
-                   
+                    persondict = {'identity': key , 'confidence': obj.confidence, 'camera': i, 'timeD':obj.time}
+                    print persondict
                     peopledata.append(persondict)
      
             socketio.emit('people_detected', json.dumps(peopledata) ,namespace='/test')

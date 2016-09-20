@@ -74,21 +74,17 @@ parser.add_argument('--unknown', type=bool, default=False,
 args = parser.parse_args()
 
 align = openface.AlignDlib(args.dlibFacePredictor)
-net = openface.TorchNeuralNet(args.networkModel, imgDim=args.imgDim,
-                              cuda=args.cuda)
+
 neuralNet_lock = threading.Lock()
 
-# net = openface.TorchNeuralNet(../models/openface/nn4.small2.v1.t7, imgDim=args.imgDim,
-#                               cuda=args.cuda)
-
-
+net = openface.TorchNeuralNet(args.networkModel, imgDim=args.imgDim,cuda=args.cuda) 
 
 facecascade = cv2.CascadeClassifier("cascades/haarcascade_frontalface_alt2.xml")
 uppercascade = cv2.CascadeClassifier("cascades/haarcascade_upperbody.xml")
 eyecascade = cv2.CascadeClassifier("cascades/haarcascade_eye.xml")
 
 
-def detect_faces(camera,img,width,height):
+def detect_recognise_faces(camera,img,width,height):
 
     buf = np.asarray(img)
     rgbFrame = np.zeros((height, width, 3), dtype=np.uint8)
@@ -163,7 +159,7 @@ def motion_detector(camera,frame):
             cv2.imwrite("avegrayfiltered.jpg", camera.meanframe)
             camera.history +=1
             return occupied, frame #occupied 
-        elif camera.history == 400:
+        elif camera.history == 600:
             camera.previous_frame = camera.current_frame
             camera.current_frame = gray
             #camera.next_frame = gray
@@ -176,24 +172,24 @@ def motion_detector(camera,frame):
         cv2.imwrite("motion.jpg", thresh)
         # dilate the thresholded image to fill in holes, then find contours
         # on thresholded image
-
         thresh = cv2.dilate(thresh, None, iterations=2)
-
         (cnts, _) = cv2.findContours(thresh.copy(), cv2.RETR_EXTERNAL,
             cv2.CHAIN_APPROX_SIMPLE)
-
         # loop over the contours
+        rects = []
         for c in cnts:
-            # if the contour is too small, ignore it
-            if cv2.contourArea(c) < 8000 or cv2.contourArea(c) > 80000:
+            # if the contour is too small or too big, ignore it
+            if cv2.contourArea(c) < 2000 or cv2.contourArea(c) > 80000:
                 continue
 
             # compute the bounding box for the contour, draw it on the frame,
             # and update the text
+            # rects.append(cv2.boundingRect(c))
             (x, y, w, h) = cv2.boundingRect(c)
-            cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
-            text = "Occupied"
-            occupied = True
+            if (h) > 1.2*(w):
+                cv2.rectangle(frame, (x, y ), (x + w, y + h), (0, 255, 0), 2)
+                text = "Occupied"
+                occupied = True
         # draw the text and timestamp on the frame
             cv2.putText(frame, "Room Status: {}".format(text), (10, 10),
             cv2.FONT_HERSHEY_SIMPLEX, 0.35, (0, 0, 255), 1)
@@ -215,7 +211,12 @@ def resize(frame):
     frame = cv2.resize(frame, dim, interpolation = cv2.INTER_AREA)    
     return frame  
 
-def crop(image, box):
+def crop(image, box, dlibRect = False):
+
+    if dlibRect == False:
+       x, y, w, h = box
+       return image[y: y + h, x: x + w] 
+
     return image[box.top():box.bottom(), box.left():box.right()]
 
     #img[y: y + h, x: x + w] 
@@ -284,8 +285,6 @@ def draw_rects_dlib(img, rects):
 
     overlay = img.copy()
     output = img.copy()
-
-    
       
     for bb in rects:
         bl = (bb.left(), bb.bottom()) # (x, y)
@@ -300,14 +299,16 @@ def draw_rects_dlib(img, rects):
 
 def detect_cascadeface(img, cascade):
 
-    
     rects = cascade.detectMultiScale(img, scaleFactor=1.2, minNeighbors=4, minSize=(20, 20), flags = cv2.CASCADE_SCALE_IMAGE)
-   
+    return rects
 
+def detect_cascadeface_accurate(img):
+
+    rects = facecascade.detectMultiScale(img, scaleFactor=1.01, minNeighbors=5, minSize=(20, 20), flags = cv2.CASCADE_SCALE_IMAGE)
     return rects
 
 def detect_cascade(img, cascade):
-    rects = cascade.detectMultiScale(img, scaleFactor=1.2, minNeighbors=4, minSize=(60, 60), flags = cv2.CASCADE_SCALE_IMAGE)
+    rects = cascade.detectMultiScale(img, scaleFactor=1.05, minNeighbors=4, minSize=(60, 60), flags = cv2.CASCADE_SCALE_IMAGE)
     return rects
 
 def detect_people_hog(image):
@@ -350,6 +351,16 @@ def detectopencv_face(image):
    
     return rects
 
+def detectdlib_face_rgb(img,rgbFrame):
+
+    bbs = align.getAllFaceBoundingBoxes(rgbFrame)
+    # Ttime = time.time() - start
+    #print("Face detection took {} seconds.".format(time.time() - start))
+    # lineString = "speed: " + str(Ttime )
+    # writeToFile("detections.txt",lineString)
+
+    return bbs#, annotatedFrame
+
 def detectdlib_face(img,height,width):
 
     buf = np.asarray(img)
@@ -367,7 +378,18 @@ def detectdlib_face(img,height,width):
     # lineString = "speed: " + str(Ttime )
     # writeToFile("detections.txt",lineString)
 
-    return bbs, annotatedFrame
+    return bbs#, annotatedFrame
+
+# def detectdlib_face(rgbFrame):
+
+#     # start = time.time()
+#     bbs = align.getAllFaceBoundingBoxes(rgbFrame)
+#     # Ttime = time.time() - start
+#     #print("Face detection took {} seconds.".format(time.time() - start))
+#     # lineString = "speed: " + str(Ttime )
+#     # writeToFile("detections.txt",lineString)
+
+#     return bbs
 
 def convertImageToNumpyArray(img,height,width): #numpy array used by dlib for image operations
     buf = np.asarray(img)
@@ -388,19 +410,19 @@ def align_face(rgbFrame,bb):
         print("//////////////////////  FACE COULD NOT BE ALIGNED  //////////////////////////")
         return alignedFace
 
-    print("//////////////////////  FACE ALIGNED  ////////////////////// ")
+    print("\n//////////////////////  FACE ALIGNED  ////////////////////// \n")
     return alignedFace
 
-def face_recognition(camera,alignedFace):
+def face_recognition(alignedFace):
 
     with neuralNet_lock:
         persondict = recognize_face("generated-embeddings/classifier.pkl",alignedFace, net)
 
     if persondict is None:
-        print("//////////////////////  FACE COULD NOT BE RECOGNIZED  //////////////////////////")
+        print("\n//////////////////////  FACE COULD NOT BE RECOGNIZED  //////////////////////////\n")
         return persondict
     else:
-        print("//////////////////////  FACE RECOGNIZED  ////////////////////// ")
+        print("\n//////////////////////  FACE RECOGNIZED  ////////////////////// \n")
         return persondict
 
 def recognize_face(classifierModel,img,net):
@@ -419,9 +441,9 @@ def recognize_face(classifierModel,img,net):
 
     print("Recognition took {} seconds.".format(time.time() - start))
     print("Recognized {} with {:.2f} confidence.".format(person, confidence))
-    #if isinstance(clf, GMM):
-    #    dist = np.linalg.norm(rep - clf.means_[maxI])
-    #    print("  + Distance from the mean: {}".format(dist))
+    # if isinstance(clf, GMM):
+    #     dist = np.linalg.norm(rep - clf.means_[maxI])
+    #     print("  + Distance from the mean: {}".format(dist) + " " + persondict)
 
     persondict = {'name': person, 'confidence': confidence}
     return persondict

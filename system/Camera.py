@@ -34,9 +34,9 @@ import argparse
 
 import logging
 
-from flask import Flask, render_template, Response, redirect, url_for, request
+# from flask import Flask, render_template, Response, redirect, url_for, request
 import Camera
-from flask.ext.socketio import SocketIO,send, emit #Socketio depends on gevent
+# from flask.ext.socketio import SocketIO,send, emit #Socketio depends on gevent
 import SurveillanceSystem
 
 CAPTURE_HZ = 20.0
@@ -99,7 +99,7 @@ class VideoCamera(object):
 		parser.add_argument('--cuda', action='store_true')
 		args = parser.parse_args()
 
-		#self.net = openface.TorchNeuralNet(args.networkModel, imgDim=args.imgDim,cuda=args.cuda) # neural net to generate 128 measurements of a face 
+		# self.net = openface.TorchNeuralNet(args.networkModel, imgDim=args.imgDim,cuda=args.cuda) # neural net to generate 128 measurements of a face 
                                   
     def __del__(self):
         self.video.release()
@@ -108,10 +108,10 @@ class VideoCamera(object):
 		logging.debug('Getting Frames')
 		while True:
 			success, frame = self.video.read()
-			#with self.capture_lock:   # stops other processes from reading the frame while it is being updated
-			self.capture_frame = None
-			if success:		
-				self.capture_frame = frame
+			with self.capture_lock:   # stops other processes from reading the frame while it is being updated
+				self.capture_frame = None
+				if success:		
+					self.capture_frame = frame
 			time.sleep(1.0/CAPTURE_HZ) # only sleep if frame captured
 
 
