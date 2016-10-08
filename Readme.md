@@ -63,13 +63,14 @@ python WebSocket.py
 - A person is classified as unknown if they are identified with a confidence less than 50%
 
 - The alarm control panel sends http post requests to a web server on a Raspberry PI to control GPIO pins. The RPI alarm interface code is yet to be uploaded, but will be available shortly.
-- This project is being developed for the purpose of my thesis and I hope to have a fully functional system by the end of October 2016.
 
 - On a 2011 mac book pro the system can process up to 6 cameras but the video streaming does lag, however frames are still able to be processed in real time.
 
 - Currently there are a few bugs and the code isn't fully commented.
 
 - There is plenty work to be done for this system to become a fully functional and secure open source home surveillance system.
+
+- This project is being developed for the purpose of my thesis and I hope to have a fully functional system by the end of October 2016.
 
 # References
 ---
