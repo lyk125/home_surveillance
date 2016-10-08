@@ -22,10 +22,11 @@ docker run -v /Users/:/host/Users -p 9000:9000 -p 8000:8000 -p 5000:5000 -t -i b
 
 - Navigate to the home_surveillance project inside the Docker container
 - Move into the system directory
+- Include dependencies not installed on docker image
 ```
 pip install psutil
-```
 pip install flask-uploads
+```
 ```
 cd system
 ```
@@ -40,9 +41,10 @@ python WebSocket.py
 ---
 
 - By default the system processes 3 videos
-- To add your own IP camera simply add the URL of the camera to the SurveillanceSystem.py script within the Surveillance_System constructer method. ``` self.cameras.append(Camera.VideoCamera("http://192.168.1.48/video.mjpg")) ``` 
-- Faces that are detected are shown in the faces detected panel on the Home Surveillance Dashboard
-- The Dashboard allows you to configure your own email and push notification alerts (You'll need to download the instapush app and add your email address in the SurveillanceSystem.py script).
+- To add your own IP camera simply add the URL of the camera into field on the camera panel on the client dashboard. 
+- Faces that are detected are shown in the faces detected panel on the Dashboard
+- To add faces to the database add a folder of images with the name of the person and retrain the classifier by selecting the retrain database on the client dashboard.
+- The Dashboard allows you to configure your own email and and alarm trigger alerts.
 - The alarm control panel sends http post requests to a web server on a Raspberry PI to control GPIO pins. 
 - This project is being developed for the purpose of my thesis and I hope to have a fully functional system by the end of October 2016.
 - Currently there are a few bugs and the code is not well commented.
