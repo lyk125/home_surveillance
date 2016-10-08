@@ -13,7 +13,7 @@
 1) Pull Docker Image
 
 ```
-docker pull bjoffe/openface_flask
+docker pull bjoffe/openface_flask_v2
 ```
 
 2) Run Docker image, make sure you mount your User directory as a volume so you can access your local files
@@ -28,11 +28,7 @@ docker run -v /Users/:/host/Users -p 9000:9000 -p 8000:8000 -p 5000:5000 -t -i b
 
 - Navigate to the home_surveillance project inside the Docker container
 - Move into the system directory
-- Include dependencies not installed on docker image
-```
-pip install psutil
-pip install flask-uploads
-```
+
 ```
 cd system
 ```
