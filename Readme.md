@@ -4,7 +4,8 @@
 
 # System Overview
 
-[embed]https://raw.githubusercontent.com/BrandonJoffe/home_surveillance/397161d18c8926a4ccfbe3cdf82d1ff621b640cd/system/debugging/designOverview-6.pdf[/embed]
+[![solarized dualmode]
+(https://github.com/BrandonJoffe/home_surveillance/blob/prototype/system/debugging/designOverview-2.png?raw=true)](#features)
 
 # Installation
 ---
