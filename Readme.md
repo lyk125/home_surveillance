@@ -1,6 +1,6 @@
 # Home Surveilance with Facial Recognition. 
 ---
-
+[![solarized dualmode](https://raw.githubusercontent.com/BrandonJoffe/home_surveillance/prototype/system/debugging/dashboard.png)](#features)
 # Installation
 ---
 
