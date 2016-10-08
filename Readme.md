@@ -1,6 +1,11 @@
 # Home Surveilance with Facial Recognition. 
 ---
 [![solarized dualmode](https://raw.githubusercontent.com/BrandonJoffe/home_surveillance/prototype/system/debugging/dashboard.png)](#features)
+
+# System Overview
+
+[![solarized dualmode](https://raw.githubusercontent.com/BrandonJoffe/home_surveillance/397161d18c8926a4ccfbe3cdf82d1ff621b640cd/system/debugging/designOverview-6.pdf)](#features)
+
 # Installation
 ---
 
@@ -40,14 +45,17 @@ python WebSocket.py
 # Notes and Features
 ---
 
-- By default the system processes 3 videos
 - To add your own IP camera simply add the URL of the camera into field on the camera panel on the client dashboard. 
+- Cameras can be set to perform motion detection, face recognition and person tracking
 - Faces that are detected are shown in the faces detected panel on the Dashboard
-- To add faces to the database add a folder of images with the name of the person and retrain the classifier by selecting the retrain database on the client dashboard.
-- The Dashboard allows you to configure your own email and and alarm trigger alerts.
-- The alarm control panel sends http post requests to a web server on a Raspberry PI to control GPIO pins. 
+- There is currently no formal database setup and the faces are stored in the aligned-images & training-images directories
+- To add faces to the database add a folder of images with the name of the person and retrain the classifier by selecting the retrain database on the client dashboard. Images can also be added through the dashboard but can currently only be added one at a time.
+- The Dashboard allows you to configure your own email and and alarm trigger alerts. 
+- The alarm control panel sends http post requests to a web server on a Raspberry PI to control GPIO pins. The RPI alarm interface code is yet to be uploaded, but will be available shortly.
 - This project is being developed for the purpose of my thesis and I hope to have a fully functional system by the end of October 2016.
-- Currently there are a few bugs and the code is not well commented.
+- On a 2011 mac book pro the system can process up to 6 cameras but the video streaming does lag, however frames are still able to be processed in real time.
+- Currently there are a few bugs and the code isn't fully commented.
+- There is plenty work to be done for this system to become a fully functional and secure opensource home surveillance system.
 
 # References
 ---
