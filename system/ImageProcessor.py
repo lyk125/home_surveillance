@@ -90,62 +90,11 @@ facecascade2 = cv2.CascadeClassifier("cascades/haarcascade_frontalface_alt2.xml"
 uppercascade = cv2.CascadeClassifier("cascades/haarcascade_upperbody.xml")
 eyecascade = cv2.CascadeClassifier("cascades/haarcascade_eye.xml")
 
-
 detector = dlib.get_frontal_face_detector()
 predictor = dlib.shape_predictor(args.dlibFacePredictor)
 
 # with open("generated-embeddings/classifier.pkl", 'r') as f:
 #         (le, clf) = pickle.load(f) # loads labels and classifier SVM or GMM
-
-def detect_recognise_faces(camera,img,width,height):
-
-    buf = np.asarray(img)
-    rgbFrame = np.zeros((height, width, 3), dtype=np.uint8)
-    rgbFrame[:, :, 0] = buf[:, :, 2]
-    rgbFrame[:, :, 1] = buf[:, :, 1]
-    rgbFrame[:, :, 2] = buf[:, :, 0]
-
-    annotatedFrame = np.copy(buf)
-    #start = time.time()
-    bbs = align.getAllFaceBoundingBoxes(rgbFrame)
-    #print("Face detection took {} seconds.".format(time.time() - start))
-
-    for bb in bbs:
-
-        bl = (bb.left(), bb.bottom()) # (x, y)
-        tr = (bb.right(), bb.top()) # (x+w,y+h)
-
-        print("\n=====================================================================")
-        print("Face Being Processed")
-        start = time.time()
-        landmarks = align.findLandmarks(rgbFrame, bb)
-        alignedFace = align.align(args.imgDim, rgbFrame, bb,landmarks=landmarks,landmarkIndices=openface.AlignDlib.OUTER_EYES_AND_NOSE)                                                     
-        if alignedFace is None:
-            cv2.rectangle(annotatedFrame, bl, tr, color=(255, 150, 150), thickness=2)
-            print("//////////////////////  FACE COULD NOT BE ALIGNED  //////////////////////////")
-            continue
-        print("Face Alignment took {} seconds.".format(time.time() - start))
-
-        #///////////////////////////////////////////////////////////////////
-
-        #//////////////////////////////////////////////////////////////////
-        cv2.imwrite("facedebug.png", alignedFace)
-        with neuralNet_lock:
-            persondict = recognize_face("generated-embeddings/classifier.pkl",alignedFace,net)
-        if persondict is None:
-            print("//////////////////////  FACE COULD NOT BE RECOGNIZED  //////////////////////////")
-            continue
-        else:
-            print("=====================================================================")
-            if persondict['confidence'] > 0.60:
-                cv2.rectangle(annotatedFrame, bl, tr, color=(153, 255, 200), thickness=2)
-            else:  
-                cv2.rectangle(annotatedFrame, bl, tr, color=(100, 255, 255),thickness=2) 
-            cv2.putText(annotatedFrame,  str(persondict['name']) + " " + str(math.ceil(persondict['confidence']*100))+ "%", (bb.left()-15, bb.bottom() + 10),
-                    cv2.FONT_HERSHEY_SIMPLEX, fontScale=0.45,
-                    color=(152, 255, 204), thickness=1)
-
-    return annotatedFrame
 
 def motion_detector(camera,frame, get_rects):
         #calculate mean standard deviation then determine if motion has actually accurred
@@ -162,7 +111,7 @@ def motion_detector(camera,frame, get_rects):
         #gray = cv2.GaussianBlur(gray, (11, 11), 0)
         gray = cv2.medianBlur(gray,9)  # filters out noise
     
-        cv2.imwrite("grayfiltered.jpg", gray)
+        #cv2.imwrite("grayfiltered.jpg", gray)
         people_rects = []
 
         #initialise and build some history
@@ -274,13 +223,6 @@ def crop(image, box, dlibRect = False):
 
     return image[box.top():box.bottom(), box.left():box.right()]
 
-        # x1 y1 -------------
-        # -------------------
-        # -------------------
-        # -------------------
-        # -------------------
-        # ----------------x2 y2
-
 def is_inside(o, i):
     ox, oy, ow, oh = o
     ix, iy, iw, ih = i
@@ -307,15 +249,6 @@ def draw_rects_cv(img, rects, color=(0, 40, 255)):
         cv2.rectangle(overlay, (x, y), (x+w, y+h), color, 2)
         cv2.addWeighted(overlay, 0.5, output, 0.5, 0, output)
     return output
-
-        #(x1, y1), (x2, y2)
-
-        # x1 y1 -------------
-        # -------------------
-        # -------------------
-        # -------------------
-        # -------------------
-        # ----------------x2 y2
    
 def draw_rects_dlib(img, rects, color = (0, 255, 255)):
 
@@ -399,10 +332,11 @@ def detectdlib_face_rgb(rgbFrame):
     return bbs#, annotatedFrame
 
 def detect_cascadeface(image):
-    image = pre_processing(image)
+   
     #image = rgb_pre_processing(image)
     with cascade_lock:  # used to block simultaneous access to resource, stops segmentation fault when using more than one camera
         #logging.debug('\n\n////////////////////// 1.1 //////////////////////\n\n')  
+        image = pre_processing(image)
         rects = facecascade.detectMultiScale(image, scaleFactor=1.2, minNeighbors=4, minSize=(30, 30), flags = cv2.CASCADE_SCALE_IMAGE)
         #logging.debug('\n\n////////////////////// 1.2 //////////////////////\n\n')  
     return rects
@@ -585,3 +519,5 @@ def writeToFile(filename,lineString): #Used for writing testing data to file
        f = open(filename,"a") 
        f.write(lineString + "\n")    
        f.close()
+
+
