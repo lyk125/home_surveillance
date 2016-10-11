@@ -52,7 +52,7 @@ python WebSocket.py
 
 - To add faces to the database add a folder of images with the name of the person and retrain the classifier by selecting the retrain database on the client dashboard. Images can also be added through the dashboard but can currently only be added one at a time.
 
-- The Dashboard allows you to configure your own email and and alarm trigger alerts. 
+- The Dashboard allows you to configure your own email and alarm trigger alerts. 
 
 - The alerts panel allows you to set up certain events such as the recognition of a particular person or motion detection so that you receive an email alert when the event occurs. The confidence slider sets the accuracy that you would like to use for recognition events. By default you'll receive a notification if a person is recognised with a percentage greater than 50%.
 
@@ -60,7 +60,7 @@ python WebSocket.py
 
 - The alarm control panel sends http post requests to a web server on a Raspberry PI to control GPIO pins. The RPI alarm interface code is yet to be uploaded, but will be available shortly.
 
-- On a 2011 mac book pro the system can process up to 6 cameras but the video streaming does lag, however frames are still able to be processed in real time.
+- On a 2011 mac book pro the system can process up to 6 cameras however the video streaming does lag. That being said, frames are still processed in real time on the server.
 
 - Currently there are a few bugs and the code isn't fully commented.
 
